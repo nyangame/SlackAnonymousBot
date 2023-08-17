@@ -1,5 +1,7 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
-const client = new DynamoDBClient({ region: "ap-northeast-1" });
+const AWS = require('aws-sdk');
+var client = new AWS.DynamoDB.DocumentClient({
+ region: "ap-northeast-1"
+});
 
 export async function getEventId(event_id)
 {

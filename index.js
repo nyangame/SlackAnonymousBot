@@ -1,5 +1,5 @@
-import { fileTransfar, sendMessage, sendAnonymousMessage } from './lib/slack.js'
-import { getThread, register,  } from './dynamo.js'
+const Slack = require('lib/slack.js');
+const DB = require('dynamo.js');
 
 let SuccessResponse = {
     statusCode: 200,
@@ -55,11 +55,11 @@ exports.handler = async (event) => {
 	    	let links = [];
 	    	if(params.event.files)
 	    	{
-	    		 links = await fileTransfar(params.event.files);
+	    		 links = await Slack.fileTransfar(params.event.files);
 	    	}
 			return SuccessResponse;
 	    	
-	        let result = await sendAnonymousMessage(ChannelId, "質問箱", params.event.text);
+	        let result = await Slack.sendAnonymousMessage(ChannelId, "質問箱", params.event.text);
 	        
 	        //ts情報をDBに登録
 	        if(result.ok)
@@ -68,20 +68,20 @@ exports.handler = async (event) => {
 	        	let reply_url = "<https://docs.google.com/forms/d/e/1FAIpQLSdiEDBZVjRjG3lB13AvwGZZtknhqloPVG3o9olqejxTlQp0rA/viewform?usp=pp_url&entry.1229285134=" + result.message.ts + ">";
 	        	//let rep_block = [{ "type": "section", "text" : { "type": "plain_text", "text" : "この質問への返信はここから" + reply_url, "emoji": true } }];
 	        	
-	        	await sendAnonymousMessage(ChannelId, "質問箱", "この質問への返信はここから" + reply_url, result.message.ts);
+	        	await Slack.sendAnonymousMessage(ChannelId, "質問箱", "この質問への返信はここから" + reply_url, result.message.ts);
 	
-	        	await register(result.message, params.event, params.event_id);
+	        	await DB.register(result.message, params.event, params.event_id);
 	        }
 		}
 		break;
 		
 	case "ThreadResponse":
 		{
-        	let thread = await getThread(params.event.thread_ts);
+        	let thread = await DB.getThread(params.event.thread_ts);
         	let result = "";
         	if(thread && thread.user)
         	{
-        		result = await sendMessage(thread.user, "質問に返信がありました:\n" + params.event.text);
+        		result = await Slack.sendMessage(thread.user, "質問に返信がありました:\n" + params.event.text);
         	}
 		}
 		break;
